@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Phân công công việc</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3f6fa;--surface:#fff;--ink:#14213d;--muted:#5b6b85;--line:#d9e1ec;--accent:#2f5bea;--accent-ink:#fff;--now:#fff1cc;--now-line:#e0a526;--danger:#c0392b;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1624;--surface:#17213a;--ink:#e8eefb;--muted:#9aa9c4;--line:#2a3757;--accent:#6f93ff;--accent-ink:#0f1624;--now:#3a3016;--danger:#ff7b6b;color-scheme:dark}}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 "Be Vietnam Pro",system-ui,sans-serif}
+main{max-width:860px;margin:0 auto;padding:24px 16px 48px}
+h1{font-size:28px;font-weight:800;margin:0 0 4px;letter-spacing:-.01em}
+h2{font-size:16px;font-weight:700;margin:0 0 12px}
+.sub{color:var(--muted);margin:0 0 20px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.cols .panel{margin:0}
+.wide{grid-column:1/-1}
+@media(max-width:700px){.cols{grid-template-columns:1fr}}
+.row{display:flex;gap:8px;margin-bottom:12px}
+input[type=text],select{font:inherit;color:inherit;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;min-width:0}
+input[type=text]{flex:1}
+button{font:inherit;font-weight:500;cursor:pointer;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 14px}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button:disabled{opacity:.5;cursor:default}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+ul{list-style:none;margin:0;padding:0}
+li{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)}
+li:first-child{border-top:0}
+li .name{flex:1;overflow-wrap:anywhere}
+li.off .name{color:var(--muted);text-decoration:line-through}
+.x{border:0;background:none;color:var(--danger);padding:4px 8px}
+.lock{border:0;background:none;color:var(--muted);font-size:13px;padding:4px 0;text-decoration:underline}
+.chk{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:13px}
+.empty{color:var(--muted);margin:0}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:16px}
+.status{color:var(--muted);font-size:13px}
+.list li{padding:14px 0}
+.list .task{flex:1;font-weight:500}
+.list .who{font-weight:700;font-size:17px;background:var(--now);border:1px solid var(--now-line);border-radius:999px;padding:4px 14px}
+.next{color:var(--muted);font-size:13px;margin:12px 0 0}
+.groups li{display:block}
+.groups b{display:block}
+.groups span{color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+<main>
+<h1>Phân công công việc</h1>
+<p class="sub" id="sub"></p>
+<div id="app"></div>
+</main>
+<script type="application/json" id="data">{"round":1,"gi":0,"groups":[{"id":"g0","name":"Nhóm 1"},{"id":"g1","name":"Nhóm 2"}],"members":[{"id":"m0","name":"An","g":"g0","off":false},{"id":"m1","name":"Bình","g":"g0","off":false},{"id":"m2","name":"Chi","g":"g0","off":false},{"id":"m3","name":"Dũng","g":"g1","off":false},{"id":"m4","name":"Em","g":"g1","off":false},{"id":"m5","name":"Phúc","g":"g1","off":false}],"tasks":[{"id":"t0","name":"Rửa chén"},{"id":"t1","name":"Đổ rác"},{"id":"t2","name":"Lau nhà"}],"assign":{"t0":"m1","t1":"m2","t2":"m0"},"done":["m0","m1","m2"],"updated":""}</script>
+<script>
+const PASS="doi-mat-khau"; // Đổi mật khẩu này trước khi đưa lên website
+const S=JSON.parse(document.getElementById("data").textContent);
+let editor=false,dirty=false,note="",addG=S.groups[0].id;
+const $app=document.getElementById("app");
+const uid=()=>Math.random().toString(36).slice(2,9);
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+const grp=()=>S.groups[S.gi]||S.groups[0];
+const gact=id=>S.members.filter(m=>m.g===id&&!m.off);
+const nameOf=id=>(S.members.find(m=>m.id===id)||{}).name;
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+// Chọn ngẫu nhiên người trong nhóm hiện tại, ưu tiên người chưa làm trong chu kỳ của nhóm
+function genAssign(){
+  const a=gact(grp().id);if(!a.length||!S.tasks.length){S.assign={};return}
+  const ids=new Set(a.map(m=>m.id));
+  const other=S.done.filter(id=>!ids.has(id));
+  let done=S.done.filter(id=>ids.has(id));
+  const pick=[];
+  while(pick.length<S.tasks.length){
+    let left=shuffle(a.filter(m=>!done.includes(m.id)&&!pick.includes(m)));
+    if(!left.length){if(done.length){done=[];continue}left=shuffle(a.slice())}
+    for(const m of left){if(pick.length>=S.tasks.length)break;pick.push(m);done.push(m.id)}
+  }
+  const as={};S.tasks.forEach((t,i)=>as[t.id]=pick[i].id);
+  S.assign=as;S.done=other.concat(done);
+}
+function nextIndex(){const n=S.groups.length;for(let k=1;k<=n;k++){const i=(S.gi+k)%n;if(gact(S.groups[i].id).length)return i}return S.gi}
+function newRound(){S.round++;S.gi=nextIndex();genAssign()}
+function fix(){
+  const a=gact(grp().id),ids=new Set(a.map(m=>m.id));
+  if(!a.length){S.assign={};return}
+  const load={};a.forEach(m=>load[m.id]=0);
+  S.tasks.forEach(t=>{if(ids.has(S.assign[t.id]))load[S.assign[t.id]]++});
+  S.tasks.forEach(t=>{if(ids.has(S.assign[t.id]))return;
+    const min=Math.min(...a.map(m=>load[m.id])),c=a.filter(m=>load[m.id]===min);
+    const p=c[Math.floor(Math.random()*c.length)];S.assign[t.id]=p.id;load[p.id]++});
+}
+function change(fn){fn();fix();dirty=true;note="";render()}
+function gsel(val,on){const s=document.createElement("select");s.setAttribute("aria-label","Nhóm");
+  S.groups.forEach(g=>{const o=el("option","",g.name);o.value=g.id;if(g.id===val)o.selected=true;s.append(o)});
+  s.onchange=()=>on(s.value);return s}
+
+function render(){
+  $app.replaceChildren();
+  document.getElementById("sub").textContent=editor
+    ?"Bạn đang ở chế độ chỉnh sửa. Sau khi sửa, tải file mới và đưa lên website để người xem thấy."
+    :"Mỗi lượt một nhóm làm việc, người phụ trách được chọn ngẫu nhiên trong nhóm.";
+  const g=grp(),a=gact(g.id);
+  if(editor){
+    const bar=el("div","bar");
+    const nb=el("button","","Sang lượt mới");nb.onclick=()=>change(newRound);
+    const sb=el("button","primary","Tải file đã cập nhật");sb.disabled=!dirty;sb.onclick=save;
+    const doneN=S.done.filter(id=>a.some(m=>m.id===id)).length;
+    bar.append(nb,sb,el("span","status",note||(dirty?"Có thay đổi chưa xuất ra file. ":"")+g.name+": "+doneN+"/"+a.length+" người đã làm trong chu kỳ"));
+    $app.append(bar);
+  }
+  const p=el("section","panel");
+  p.append(el("h2","","Lượt "+S.round+" · "+g.name+(S.updated?" · cập nhật "+new Date(S.updated).toLocaleDateString("vi-VN"):"")));
+  const ul=el("ul","list");
+  if(!S.tasks.length||!a.length)ul.append(el("li","empty","Chưa có phân công nào."));
+  else S.tasks.forEach(t=>{const li=el("li");li.append(el("span","task",t.name),el("span","who",nameOf(S.assign[t.id])||"—"));ul.append(li)});
+  p.append(ul);
+  if(S.groups.length>1)p.append(el("p","next","Lượt sau: "+S.groups[nextIndex()].name));
+  $app.append(p);
+
+  const pg=el("section","panel groups");pg.append(el("h2","","Các nhóm"));
+  const gl=el("ul");
+  S.groups.forEach(x=>{const li=el("li");li.append(el("b","",x.name),el("span","",S.members.filter(m=>m.g===x.id).map(m=>m.name+(m.off?" (vắng)":"")).join(", ")||"Chưa có thành viên"));gl.append(li)});
+  pg.append(gl);$app.append(pg);
+
+  if(!editor){const f=el("button","lock","Chỉnh sửa");f.onclick=()=>{const v=prompt("Nhập mật khẩu");if(v===PASS){editor=true;render()}else if(v!==null)alert("Sai mật khẩu")};$app.append(f);return}
+  pg.remove();
+  const cols=el("div","cols");
+
+  const pn=el("section","panel");pn.append(el("h2","","Nhóm"));
+  const fg=el("form","row"),ig=el("input");ig.type="text";ig.placeholder="Tên nhóm";ig.setAttribute("aria-label","Tên nhóm");
+  fg.append(ig,el("button","primary","Thêm"));
+  fg.onsubmit=e=>{e.preventDefault();const v=ig.value.trim();if(v)change(()=>S.groups.push({id:uid(),name:v}))};
+  pn.append(fg);const gu=el("ul");
+  S.groups.forEach((x,i)=>{const li=el("li");li.append(el("span","name",x.name+" ("+S.members.filter(m=>m.g===x.id).length+")"));
+    if(S.groups.length>1){const d=el("button","x","Xóa");d.onclick=()=>change(()=>{
+      const rest=S.groups.filter(k=>k!==x);S.members.forEach(m=>{if(m.g===x.id)m.g=rest[0].id});
+      const was=grp()===x;S.groups=rest;S.gi=Math.min(S.gi,rest.length-1);if(was)genAssign()});li.append(d)}
+    gu.append(li)});
+  pn.append(gu);
+
+  const pt=el("section","panel");pt.append(el("h2","","Công việc"));
+  const ft=el("form","row"),it=el("input");it.type="text";it.placeholder="Tên công việc";it.setAttribute("aria-label","Tên công việc");
+  ft.append(it,el("button","primary","Thêm"));
+  ft.onsubmit=e=>{e.preventDefault();const v=it.value.trim();if(v)change(()=>S.tasks.push({id:uid(),name:v}))};
+  pt.append(ft);const tl=el("ul");
+  if(!S.tasks.length)tl.append(el("li","empty","Chưa có công việc nào."));
+  S.tasks.forEach(t=>{const li=el("li");li.append(el("span","name",t.name));
+    const x=el("button","x","Xóa");x.onclick=()=>change(()=>{S.tasks=S.tasks.filter(k=>k!==t);delete S.assign[t.id]});
+    li.append(x);tl.append(li)});
+  pt.append(tl);
+
+  const pm=el("section","panel wide");pm.append(el("h2","","Thành viên"));
+  const fm=el("form","row"),im=el("input");im.type="text";im.placeholder="Tên thành viên";im.setAttribute("aria-label","Tên thành viên");
+  fm.append(im,gsel(addG,v=>{addG=v}),el("button","primary","Thêm"));
+  fm.onsubmit=e=>{e.preventDefault();const v=im.value.trim();if(v)change(()=>S.members.push({id:uid(),name:v,g:addG,off:false}))};
+  pm.append(fm);const ml=el("ul");
+  if(!S.members.length)ml.append(el("li","empty","Chưa có thành viên nào."));
+  S.members.forEach(m=>{const li=el("li",m.off?"off":"");li.append(el("span","name",m.name));
+    li.append(gsel(m.g,v=>change(()=>{m.g=v})));
+    const lb=el("label","chk"),cb=document.createElement("input");cb.type="checkbox";cb.checked=m.off;
+    cb.onchange=()=>change(()=>{m.off=cb.checked});lb.append(cb,"Vắng");
+    const x=el("button","x","Xóa");x.onclick=()=>change(()=>{S.members=S.members.filter(k=>k!==m)});
+    li.append(lb,x);ml.append(li)});
+  pm.append(ml);
+  cols.append(pn,pt,pm);$app.append(cols);
+}
+
+function save(){
+  S.updated=new Date().toISOString();
+  const c=document.documentElement.cloneNode(true);
+  c.querySelector("#data").textContent=JSON.stringify(S).replace(/</g,"\\u003c");
+  c.querySelector("#app").replaceChildren();
+  const blob=new Blob(["<!DOCTYPE html>\n"+c.outerHTML],{type:"text/html"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="phan-cong.html";document.body.append(a);a.click();a.remove();
+  dirty=false;note="Đã tải file mới. Hãy tải file này lên website thay cho file cũ.";render();
+}
+render();
+</script>
+</body>
+</html>
