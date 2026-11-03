@@ -162,13 +162,13 @@ function render(){
   }
   const p=el("section","panel");
   const pd=planDay();
-  if(pd){const lb=el("p","next","Kế hoạch ngày "+fmtDay(pd));lb.style.margin="0 0 4px";p.append(lb)}
+  if(pd){const lb=el("p","next","Phân công ngày "+fmtDay(pd));lb.style.margin="0 0 4px";p.append(lb)}
   p.append(el("h2","",g.name));
   const ul=el("ul","list");
   if(!S.tasks.length||!a.length)ul.append(el("li","empty","Chưa có phân công nào."));
   else S.tasks.forEach(t=>{const li=el("li");li.append(el("span","task",t.name),el("span","who",nameOf(S.assign[t.id])||"—"));ul.append(li)});
   p.append(ul);
-  if(S.groups.length>1)p.append(el("p","next","Lượt sau: "+S.groups[nextIndex()].name));
+  if(S.groups.length>1)p.append(el("p","next","Hôm sau: "+S.groups[nextIndex()].name));
   if(editor){const na=nextAuto();
   p.append(el("p","next",(S.carry?"Đang hoãn: lượt này được giữ thêm một ngày làm việc. ":"")+(na?"Tự động đổi lượt: "+fmtDay(na)+" lúc "+S.hour+":00":"Chưa có lịch đổi lượt tự động")))}
   $app.append(p);
