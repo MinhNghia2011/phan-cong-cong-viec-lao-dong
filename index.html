@@ -2,7 +2,7 @@
 <html lang="vi"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Phân công công việc</title>
+<title>Phân công trực nhật</title>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700;800&amp;display=swap" rel="stylesheet">
 <style>
 :root{--bg:#f3f6fa;--surface:#fff;--ink:#14213d;--muted:#5b6b85;--line:#d9e1ec;--accent:#2f5bea;--accent-ink:#fff;--now:#fff1cc;--now-line:#e0a526;--danger:#c0392b;
@@ -50,7 +50,7 @@ li.off .name{color:var(--muted);text-decoration:line-through}
 </head>
 <body data-new-gr-c-s-check-loaded="14.1343.0" data-gr-ext-installed="">
 <main>
-<h1>Phân công công việc</h1>
+<h1>Phân công trực nhật</h1>
 <p class="sub" id="sub">Bạn đang ở chế độ chỉnh sửa. Sau khi sửa, tải file mới và đưa lên website để người xem thấy.</p>
 <div id="app"></div>
 </main>
@@ -150,7 +150,7 @@ function render(){
   $app.replaceChildren();
   document.getElementById("sub").textContent=editor
     ?"Bạn đang ở chế độ chỉnh sửa. Sau khi sửa, tải file mới và đưa lên website để người xem thấy."
-    :"Kế hoạch phân công cho ngày làm việc kế tiếp, người phụ trách được chọn ngẫu nhiên trong nhóm.";
+    :"Phân công trực nhật cho ngày tiếp theo, người phụ trách được chọn ngẫu nhiên trong nhóm.";
   const g=grp(),a=gact(g.id);
   if(editor){
     const bar=el("div","bar");
