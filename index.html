@@ -169,7 +169,7 @@ function render(){
   p.append(el("h2","",g.name));
   const ul=el("ul","list");
   if(!S.tasks.length||!a.length)ul.append(el("li","empty","Chưa phân công, nhóm tự phân công"));
-  else S.tasks.forEach(t=>{const li=el("li");li.append(el("span","task",t.name),(nameOf(S.assign[t.id])?el("span","who",nameOf(S.assign[t.id])):el("span","who none","Chưa có người")));ul.append(li)});
+  else S.tasks.forEach(t=>{const li=el("li");li.append(el("span","task",t.name),(nameOf(S.assign[t.id])?el("span","who",nameOf(S.assign[t.id])):el("span","who none","Chưa có người, nhóm tự phân công")));ul.append(li)});
   p.append(ul);
   if(S.groups.length>1)p.append(el("p","next","Hôm sau: "+S.groups[nextIndex()].name));
   if(editor){const na=nextAuto();
