@@ -180,13 +180,12 @@ function render(){
 
   const today0=ymd(vn()),upH=holRanges().filter(r=>r.to>=today0);
   if(upH.length){
-    const ph=el("section","panel");ph.append(el("h2","","Lịch nghỉ lễ"));
+    const ph=el("section","panel");ph.append(el("h2","","Lịch nghỉ"));
     const hu=el("ul");
     upH.forEach(r=>{const li=el("li");li.append(el("span","name",fmtRange(r)));
       if(r.from<=today0)li.append(el("span","who","Đang nghỉ"));
       hu.append(li)});
     ph.append(hu);
-    ph.append(el("p","next","Trong thời gian nghỉ, lượt trực nhật được giữ nguyên và chuyển sang ngày đi học kế tiếp."));
     $app.append(ph);
   }
 
