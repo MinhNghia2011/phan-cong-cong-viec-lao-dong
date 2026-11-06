@@ -69,7 +69,6 @@ const gact=id=>S.members.filter(m=>m.g===id&&!m.off);
 const nameOf=id=>(S.members.find(m=>m.id===id)||{}).name;
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 
-// Chọn ngẫu nhiên người trong nhóm hiện tại, ưu tiên người chưa làm trong chu kỳ của nhóm
 function genAssign(){
   const a=gact(grp().id);if(!a.length||!S.tasks.length){S.assign={};return}
   const ids=new Set(a.map(m=>m.id));
@@ -101,8 +100,6 @@ function gsel(val,on){const s=document.createElement("select");s.setAttribute("a
   s.onchange=()=>on(s.value);return s}
 
 
-// ===== Tự động đổi lượt (giờ Việt Nam, UTC+7) =====
-// Mọi người mở trang đều tính ra cùng một kết quả nhờ số ngẫu nhiên theo seed (ngày + số lượt).
 const DAY=864e5;
 const vn=()=>new Date(Date.now()+7*36e5);
 const ymd=d=>d.toISOString().slice(0,10);
@@ -171,7 +168,7 @@ function render(){
   if(pd){const lb=el("p","next","Phân công ngày "+fmtDay(pd));lb.style.margin="0 0 4px";p.append(lb)}
   p.append(el("h2","",g.name));
   const ul=el("ul","list");
-  if(!S.tasks.length||!a.length)ul.append(el("li","empty","Chưa có phân công nào."));
+  if(!S.tasks.length||!a.length)ul.append(el("li","empty","Chưa phân công, nhóm tự phân công"));
   else S.tasks.forEach(t=>{const li=el("li");li.append(el("span","task",t.name),(nameOf(S.assign[t.id])?el("span","who",nameOf(S.assign[t.id])):el("span","who none","Chưa có người")));ul.append(li)});
   p.append(ul);
   if(S.groups.length>1)p.append(el("p","next","Hôm sau: "+S.groups[nextIndex()].name));
@@ -247,7 +244,7 @@ function render(){
     cb.onchange=()=>change(()=>{S.skip=S.skip.filter(x=>x!==v);if(cb.checked)S.skip.push(v)});
     lb.append(cb,t);r2.append(lb)});
   ps.append(r2);
-  ps.append(el("h2","","Ngày nghỉ lễ (công việc dời sang ngày làm việc kế tiếp)"));
+  ps.append(el("h2","","Ngày nghỉ (công việc dời sang ngày làm việc kế tiếp)"));
   const fh=el("form","row"),i1=el("input"),i2=el("input");
   i1.type="date";i1.setAttribute("aria-label","Nghỉ từ ngày");
   i2.type="date";i2.setAttribute("aria-label","Nghỉ đến ngày");
@@ -262,7 +259,7 @@ function render(){
     })};
   ps.append(fh);
   const hl=el("ul");
-  if(!S.holidays.length)hl.append(el("li","empty","Chưa có ngày nghỉ lễ nào."));
+  if(!S.holidays.length)hl.append(el("li","empty","Chưa có ngày nghỉ nào."));
   const ranges=holRanges();
   ranges.forEach(r=>{const li=el("li");
     li.append(el("span","name",fmtRange(r)));
