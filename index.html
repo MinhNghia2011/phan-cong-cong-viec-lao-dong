@@ -198,7 +198,7 @@ function render(){
   if(editor){
     const bar=el("div","bar");
     const nb=el("button","","Sang lượt mới");nb.onclick=()=>change(()=>{newRound();S.lastDay=ymd(vn())});
-    const kb=el("button","","Sang ngày kế (giữ nguyên người)");
+    const kb=el("button","","Sang ngày mới");
     const kd=planDay();kb.disabled=!kd;
     kb.title="Chuyển sang ngày làm việc kế tiếp, giữ nguyên nhóm và người đang được phân công";
     kb.onclick=()=>{if(kd)change(()=>{S.lastDay=kd})};
